@@ -86,7 +86,7 @@ void web_root()
 	authenticate();
 
 	if (!t4.lockUnit())
-		return web_server.send(500);
+		return web_server.send(500, "text/plain", "Error");
 
 	auto& unit = t4.getUnit();
 
@@ -132,7 +132,7 @@ void web_configure_get()
 	authenticate();
 
 	if (!t4.lockUnit())
-		return web_server.send(500);
+		return web_server.send(500, "text/plain", "Error");
 
 	auto& unit = t4.getUnit();
 
@@ -141,7 +141,7 @@ void web_configure_get()
 	auto root_menu_it = std::find_if(unit.menu.begin(), unit.menu.end(), [root](const auto& m) { return (m >> 8) == root; });
 	if (root_menu_it == unit.menu.end())
 	{
-		web_server.send(400);
+		web_server.send(400, "text/plain", "Bad request");
 		return;
 	}
 
@@ -352,7 +352,7 @@ void web_configure_post()
 	authenticate();
 
 	if (!t4.lockUnit())
-		return web_server.send(500);
+		return web_server.send(500, "text/plain", "Error");
 
 	auto& unit = t4.getUnit();
 
@@ -387,7 +387,7 @@ void web_configure_post()
 	t4.unlockUnit();
 
 	web_server.sendHeader("Location", "?root=" + String(root));
-	web_server.send(303);
+	web_server.send(303, "text/plain", "Redirect");
 }
 
 void web_diagnostics()
@@ -397,7 +397,7 @@ void web_diagnostics()
 	auto root = web_server.arg("root").toInt();
 
 	if (!t4.lockUnit())
-		return web_server.send(500);
+		return web_server.send(500, "text/plain", "Error");
 
 	auto& unit = t4.getUnit();
 
@@ -676,7 +676,7 @@ void web_diagnostics()
 	}
 	else
 	{
-		web_server.send(500);
+		web_server.send(500, "text/plain", "Error");
 	}
 
 	t4.unlockUnit();
@@ -687,7 +687,7 @@ void web_log()
 	authenticate();
 
 	if (!t4.lockUnit())
-		return web_server.send(500);
+		return web_server.send(500, "text/plain", "Error");
 
 	auto& unit = t4.getUnit();
 
@@ -721,7 +721,7 @@ void web_log()
 	}
 	else
 	{
-		web_server.send(500);
+		web_server.send(500, "text/plain", "Error");
 	}
 }
 
@@ -730,7 +730,7 @@ void web_status()
 	authenticate();
 
 	if (!t4.lockUnit())
-		return web_server.send(500);
+		return web_server.send(500, "text/plain", "Error");
 
 	auto& unit = t4.getUnit();
 
@@ -777,7 +777,7 @@ void web_status()
 	}
 	else
 	{
-		web_server.send(500);
+		web_server.send(500, "text/plain", "Error");
 	}
 }
 
@@ -786,7 +786,7 @@ void web_execute()
 	authenticate();
 
 	if (!t4.lockUnit())
-		return web_server.send(500);
+		return web_server.send(500, "text/plain", "Error");
 
 	auto& unit = t4.getUnit();
 
@@ -798,7 +798,7 @@ void web_execute()
 	t4.unlockUnit();
 
 	web_server.sendHeader("Location", "/");
-	web_server.send(303);
+	web_server.send(303, "text/plain", "Redirect");
 }
 
 void webServerInit()
