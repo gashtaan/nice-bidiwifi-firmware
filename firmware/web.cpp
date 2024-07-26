@@ -23,6 +23,8 @@ extern T4Client t4;
 
 WebServer web_server(80);
 
+String basePath("/");
+
 void authenticate()
 {
 	if ((web_server.client().remoteIP() & 0x00FFFFFF) == (WiFi.gatewayIP() & 0x00FFFFFF))
@@ -112,13 +114,13 @@ void web_root()
 	}
 
 	html += "<br/>";
-	html += "<a href=\"/configure\">Configure</a><br/>";
-	html += "<a href=\"/log\">Log</a><br/>";
-	html += "<a href=\"/status\">Status</a><br/>";
+	html += "<a href=\"" + basePath + "configure\">Configure</a><br/>";
+	html += "<a href=\"" + basePath + "log\">Log</a><br/>";
+	html += "<a href=\"" + basePath + "status\">Status</a><br/>";
 	html += "<br/>";
 
 	for (auto command : unit.commands)
-		html += "<button onclick=\"location='/execute?command=" + String(command) + "'\">" + String(T4CommandStrings[command]) + "</button>\n";
+		html += "<button onclick=\"location='" + basePath + "execute?command=" + String(command) + "'\">" + String(T4CommandStrings[command]) + "</button>\n";
 
 	t4.unlockUnit();
 
@@ -195,12 +197,12 @@ void web_configure_get()
 		if (group)
 		{
 			// link to nested group
-			html += "<a href=\"/configure?root=" + String(command) + "\">" + T4MenuStrings[command] + "</a>";
+			html += "<a href=\"" + basePath + "configure?root=" + String(command) + "\">" + T4MenuStrings[command] + "</a>";
 		}
 		else if (command_info && (command_info[2] & 0xF0) == 0xE0)
 		{
 			// link to diagnostics
-			html += "<a href=\"/diagnostics?root=" + String(command) + "\">" + T4MenuStrings[command] + "</a>";
+			html += "<a href=\"" + basePath + "diagnostics?root=" + String(command) + "\">" + T4MenuStrings[command] + "</a>";
 		}
 		else
 		{
@@ -335,11 +337,9 @@ void web_configure_get()
 
 	html += "</form>\n";
 
-	html += "<a href=\"";
+	html += "<a href=\"" + basePath;
 	if (root)
-		html += "?root=" + String(upper_root);
-	else
-		html += "/";
+		html += "configure?root=" + String(upper_root);
 	html += "\">&Ll; Back</a><br/>";
 
 	html += footer();
@@ -669,7 +669,7 @@ void web_diagnostics()
 				break;
 		}
 
-		html += "<br/><a href=\"/configure?root=246\">&Ll; Back</a><br/>";
+		html += "<br/><a href=\"" + basePath + "configure?root=246\">&Ll; Back</a><br/>";
 		html += footer();
 
 		web_server.send(200, "text/html", html);
@@ -714,7 +714,7 @@ void web_log()
 			html += "<br/>";
 		}
 
-		html += "<br/><a href=\"/\">&Ll; Back</a><br/>";
+		html += "<br/><a href=\"" + basePath + "\">&Ll; Back</a><br/>";
 		html += footer();
 
 		web_server.send(200, "text/html", html);
@@ -770,7 +770,7 @@ void web_status()
 		html += "<tr><td>EEPROM errors</td><td>" + String(flags & 0x10 ? "No errors found" : "Errors found") + "</td></tr>";
 		html += "</table>\n";
 
-		html += "<br/><a href=\"/\">&Ll; Back</a><br/>";
+		html += "<br/><a href=\"" + basePath + "\">&Ll; Back</a><br/>";
 		html += footer();
 
 		web_server.send(200, "text/html", html);
@@ -797,19 +797,19 @@ void web_execute()
 
 	t4.unlockUnit();
 
-	web_server.sendHeader("Location", "/");
+	web_server.sendHeader("Location", basePath);
 	web_server.send(303, "text/plain", "Redirect");
 }
 
 void webServerInit()
 {
-	web_server.on("/", web_root);
-	web_server.on("/configure", HTTP_GET, web_configure_get);
-	web_server.on("/configure", HTTP_POST, web_configure_post);
-	web_server.on("/diagnostics", web_diagnostics);
-	web_server.on("/log", web_log);
-	web_server.on("/status", web_status);
-	web_server.on("/execute", web_execute);
+	web_server.on(basePath, web_root);
+	web_server.on(basePath + "configure", HTTP_GET, web_configure_get);
+	web_server.on(basePath + "configure", HTTP_POST, web_configure_post);
+	web_server.on(basePath + "diagnostics", web_diagnostics);
+	web_server.on(basePath + "log", web_log);
+	web_server.on(basePath + "status", web_status);
+	web_server.on(basePath + "execute", web_execute);
 	web_server.begin();
 }
 
