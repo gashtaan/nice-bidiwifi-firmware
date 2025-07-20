@@ -36,6 +36,9 @@ void onT4Packet(T4Packet& t4Packet)
 
 void onUDPPacket(AsyncUDPPacket& udpPacket)
 {
+	if (udpPacket.length() == 5 && !memcmp(udpPacket.data(), "RESET", 5))
+		ESP.restart();
+
 	T4Packet t4_packet;
 	t4_packet.packetSize = udpPacket.length();
 	memcpy(t4_packet.data, udpPacket.data(), udpPacket.length());
