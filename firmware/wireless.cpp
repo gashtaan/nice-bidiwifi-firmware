@@ -54,16 +54,26 @@ bool ping()
 	to_address.sin_family = AF_INET;
 	to_address.sin_addr.s_addr = gateway;
 
+	bool ok = false;
+
 	int sock = socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP);
+	if (sock != -1)
+	{
+		static const struct timeval timeout = { 2, 0 };
+		if (!setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)))
+		{
+			if (sendto(sock, &icmp_request, sizeof(icmp_request), 0, (struct sockaddr*)&to_address, sizeof(to_address)) == sizeof(icmp_request))
+			{
+				// do not check response itself, it doesn't really matter what it is, any response confirms the WiFi is still online
+				char response[64];
+				ok = (recv(sock, response, sizeof(response), 0) > 0);
+			}
+		}
 
-	const struct timeval timeout = { 2, 0 };
-	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+		closesocket(sock);
+	}
 
-	sendto(sock, &icmp_request, sizeof(icmp_request), 0, (struct sockaddr*)&to_address, sizeof(to_address));
-
-	// do not check response itself, it doesn't really matter what it is, any response confirms the WiFi is still online
-	char response[64];
-	return (recv(sock, response, sizeof(response), 0) > 0);
+	return ok;
 }
 
 void checkTask(void*)
